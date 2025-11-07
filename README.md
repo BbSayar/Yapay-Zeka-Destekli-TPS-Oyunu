@@ -72,13 +72,12 @@ FSM sistemi, **esnek** ve **ölçeklenebilir** bir AI altyapısı sağlar.
 
 ## 💎 Sistem Mimarisi (Akış Diyagramı)
 
-Projenin genel sistem mimarisi ve oyun mekaniklerinin blok diyagramı aşağıda sunulmuştur. Bu şema, projenin C# script'lerinin (`.cs`) gerçek çalışma mantığını temel alarak hazırlanmıştır.
+Projenin genel sistem mimarisi ve oyun mekaniklerinin blok diyagramı aşağıda sunulmuştur. Bu şema, projenin C# script'lerinin gerçek çalışma mantığını temel alarak hazırlanmıştır.
 
-Mimari, üç ana sistem (`Player`, `NPC AI`, `UI`) arasındaki temel ilişkiyi ve bu sistemlerin "Savaş Döngüsü" (Combat Loop) içindeki kritik etkileşimini göstermektedir.
+Mimari, üç ana sistem (`Player`, `NPC AI`, `UI`) arasındaki temel ilişkiyi ve bu sistemlerin "Savaş Döngüsü" içindeki kritik etkileşimini göstermektedir.
 
 ![Last Warrior Sistem Mimarisi](sema.jpg)
 
-### Diyagramın Açıklaması:
 
 * **Üst Düzey Sistemler:** Proje, `Player`, `NPC AI` ve `UI` olmak üzere üç ana modüle ayrılmıştır.
 * **Savaş Döngüsü (Akış 1 & 2):** Diyagramın alt kısmı, kodumuzdaki en kritik mantığı açıklar:
