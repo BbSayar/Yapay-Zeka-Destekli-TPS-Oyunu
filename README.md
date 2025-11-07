@@ -69,26 +69,24 @@ FSM sistemi, **esnek** ve **ölçeklenebilir** bir AI altyapısı sağlar.
 | **Cinemachine** | Kamera kontrolü |
 | **Input System** | Oyuncu hareket ve nişan kontrolü |
 
-## 🧠 Proje Yapısı
 
-Assets/
-├── Scripts/
-│ ├── Player/
-│ │ └── PlayerController.cs
-│ ├── Enemy/
-│ │ ├── EnemyAI.cs
-│ │ ├── PatrolState.cs
-│ │ └── IdleState.cs
-│ └── Health.cs
-├── Prefabs/
-│ ├── Player.prefab
-│ ├── Enemy.prefab
-│ └── Waypoint.prefab
-├── Scenes/
-│ └── MainScene.unity
-└── UI/
-├── HealthBar
-└── AmmoCounter
+## 💎 Sistem Mimarisi (Akış Diyagramı)
+
+Projenin genel sistem mimarisi ve oyun mekaniklerinin blok diyagramı aşağıda sunulmuştur. Bu şema, projenin C# script'lerinin (`.cs`) gerçek çalışma mantığını temel alarak hazırlanmıştır.
+
+Mimari, üç ana sistem (`Player`, `NPC AI`, `UI`) arasındaki temel ilişkiyi ve bu sistemlerin "Savaş Döngüsü" (Combat Loop) içindeki kritik etkileşimini göstermektedir.
+
+![Last Warrior Sistem Mimarisi](sema.jpg)
+
+### Diyagramın Açıklaması:
+
+* **Üst Düzey Sistemler:** Proje, `Player`, `NPC AI` ve `UI` olmak üzere üç ana modüle ayrılmıştır.
+* **Savaş Döngüsü (Akış 1 & 2):** Diyagramın alt kısmı, kodumuzdaki en kritik mantığı açıklar:
+    1.  **Ateş Etme:** `PlayerController` veya `NPC_AI`, kendi mermi prefab'ını (`PlayerBulletPrefab` / `NPC_BulletPrefab`) oluşturur.
+    2.  **Vuruş Tespiti:** Mermi script'i (`AnimatedTracer` / `NPC_AnimatedTracer`) bir `Hitbox`'a çarpar.
+    3.  **Hasar İletme:** `Hitbox` script'i (`PlayerHitbox.cs` / `NPC_Hitbox.cs`), çarpan (`Multiplier`) değerini alır ve hasar bilgisini ana `Health` script'ine (`Health.cs` / `NPC_Health.cs`) iletir.
+    4.  **Ölüm (Die):** `Health` script'i, can sıfıra düşerse, ilgili ana kontrolcüyü (`PlayerController` / `NPC_AI`) haberdar ederek ölüm fonksiyonunu tetikler.
+
 
 ## 🎮 Yapılması Hedeflenenler
 
