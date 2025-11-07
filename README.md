@@ -1,22 +1,34 @@
 # 🎯 Last Warrior: Yapay Zeka Destekli TPS(Third Person Shooter) Oyunu
 
-**Last Warrior**, Unity oyun motoru kullanılarak geliştirilmiş, yapay zekâ destekli bir **TPS** oyunudur.  
-Oyuncu, özel kuvvet askeri **Teğmen Oğuz Aydın** rolünü üstlenerek terk edilmiş bir askeri depoda düşmanlarla savaşır.  
-Yapay zekâ düşman karakterleri, **Finite State Machine (FSM)** tabanlı davranış modelleriyle yönetilmektedir.
+
+## Proje Tanımı
+Bu proje, Unity oyun motoru kullanılarak geliştirilen **"Last Warrior"** adında bir Third Person Shooter (TPS) oyunudur. Proje, oyuncuya üçüncü şahıs bakış açısından bir karakteri kontrol etme imkanı sunar. Oyunun teknik omurgasını, temel TPS mekanikleri (hareket, siper alma, nişan alma) ve düşman davranışlarını yöneten Finite State Machine (FSM) tabanlı bir yapay zekâ mimarisi oluşturmaktadır.
+
+
+## Proje Amacı
+
+Bu projenin temel amacı; Unity ortamında baştan sona işlevsel bir TPS oyun prototipi oluşturmaktır. Bu hedefe ulaşmak için aşağıdaki alt amaçlar belirlenmiştir:
+
+*Akıcı ve tepkisel bir üçüncü şahıs karakter kontrol sistemi geliştirmek.
+
+*Finite State Machine (FSM) kullanarak, oyuncunun eylemlerine dinamik olarak tepki verebilen (Devriye Gezme, Takip Etme, Saldırma) bir düşman yapay zekâsı kodlamak.
+
+*Temel oyun döngüsünü (görev başlangıcı, çatışma, hedef tamamlama, görev sonu) eksiksiz bir şekilde uygulamak.
+
+*Oyunun geçtiği "Eski Depo" atmosferini yansıtacak bir seviye tasarımı ve kullanıcı arayüzü (UI) oluşturmak.
+
 
 ## 🪖 Oyun Hakkında
 
 **Tür:** Third Person Shooter (TPS)  
 **Motor:** Unity  
 **Dil:** C#  
-**Tema:** Askerî, Aksiyon, Operasyon 
+**Tema:** Aksiyon, Operasyon 
 
 ## 🎬 Senaryo
-Eski bir askeri mühimmat deposu, yıllar önce terk edilmiş gibi görünüyor.
-Ancak uydu verileri, içeride yasadışı silah üretimi ve veri transferi yapıldığını gösteriyor. 
-Sen, **Teğmen Oğuz Aydın**, özel kuvvetlerden geriye kalan tek askersin.  
-Ekibinle bir anda iletişim kesildi.  
-Şimdi yalnızsın…
+
+Hikaye, "Eski Depo" olarak bilinen, unutulmuş bir bölgede geçmektedir. Oyuncu, bu terk edilmiş depoyu korumakla yükümlüdür. Ancak, depo sessiz değildir. Bölgeyi kendi kalesi haline getirmek isteyen düşmanlar tarafından işgal edilecektir. Oyuncu, bu bölgeyi düşman saldırılarından koruyarak hayatta kalma mücadelesi verecektir. 
+
 
 ## 🤖 Yapay Zekâ Sistemi
 
@@ -110,15 +122,56 @@ Assets/
 - NPC’ler NavMesh üzerinde konumlandırıldı.  
 - NavMesh **Bake** işlemiyle gezilebilir alanlar tanımlandı.
 
+
 ## 🩸 Karşılaşılan Zorluklar ve Çözümler
 
-| Zorluk | Çözüm |
-|--------|--------|
-| NPC’lerin engeller arkasında oyuncuyu algılaması | `Raycasting` ile görüş hattı kontrolü eklendi. |
-| Pathfinding hataları | NavMesh yeniden oluşturuldu (`Bake`). |
-| Menü geçişlerinde donma | Asenkron sahne yükleme (`AsyncOperation`) kullanıldı. |
-| Performans düşüşü | Object Pooling ve Coroutine optimizasyonları uygulandı. |
-| Mor ekran (Render Pipeline) hatası | Render Pipeline Converter ile çözüldü. |
+Proje geliştirme süreci, birden fazla projenin birleştirilmesinden kaynaklanan ve Unity'nin karmaşık sistemlerinin (Animasyon, AI, Fizik) entegrasyonundan doğan ciddi zorluklar içeriyordu.
+
+### 1. Proje Birleştirme ve Kurulum Hataları
+
+İlk zorluk, `Player` projesi ile `WarZone` projesini hatasız birleştirmekti.
+
+* **Varlık Çakışmaları:** İki projede de `Hitbox` adında script olması derleyici hatasına (`CS0101`) neden oldu.
+**Çözüm:** Script'lerden birinin adı `PlayerHitbox` olarak değiştirildi.
+* **Gereksiz Dosyalar:** `Samples` klasörü gibi gereksiz dosyaların aktarılması, 100'den fazla derleyici hatası oluşturdu.
+* **Sahne Referans Hataları:** NPC'lere `PatrolPoint` ataması yaparken iki farklı sahnenin (`SampleScene` ve `Scene`) açık olması "cross-scene reference" hatasına neden oldu. **Çözüm:** Tüm ilgili objeler tek bir sahneye (`SampleScene`) taşındı.
+* **Eksik Bileşenler:** Yeni projenin `Cinemachine` ve `Splines` gibi paketleri içermemesi hatalara yol açtı.
+* **Prefab vs. Model:** En kafa karıştırıcı sorunlardan biri, sahneye tüm scriptlere sahip `Player` prefabı yerine, "ham" olan `PlayerModel` 3D modelinin sürüklenmesiydi. Bu durum, karakterin "cansız" durmasına neden oldu.
+
+### 2. Oyuncu Kontrolü (WASD) ve Kamera Sorunları
+
+* **WASD Hareket Hatası:** Zıplama (`Space`) çalışırken `WASD` tuşlarının çalışmaması, sorunun kodda olmadığını gösterdi.
+    * **Çözüm:** Sorunun, `PlayerController.cs` script'indeki `mainCameraTransform` değişkeninin `null` (boş) kalmasından kaynaklandığı tespit edildi. `Camera.main` kodunun çalışması için kameranın `Tag` (Etiket) ayarının "MainCamera" olması gerekiyordu.
+* **Cinemachine Ayarları:** Nişan kamerasına (`AimCamera`) geçişin çok yavaş olduğu fark edildi.
+    * **Çözüm:** Sorunun kameranın kendisinden değil, `Main Camera`'daki `CinemachineBrain` bileşeninden kaynaklandığı bulundu ve geçiş hızı buradan ayarlandı.
+
+### 3. NPC Yapay Zekâ ve Animasyon (T-Pose) Hataları
+
+
+* **Animator Referans Sorunları (T-Pose):**
+    * Karakterler `Die()` fonksiyonu çalıştığında T-Pose pozisyonuna geçiyordu.
+    * **Çözüm:** Sorunun, `PlayerController` ve `Health` script'lerinin `Animator`'ü `GetComponent<Animator>()` komutuyla **aynı obje üzerinde** aramasından ancak `Animator` bileşeninin aslında bir *alt obje* (`PlayerModel`) üzerinde olmasından kaynaklandığı anlaşıldı. Referanslar düzeltildi.
+* **Navigasyon ve Root Motion Çakışması:**
+    * Saldırı (`Attack`) animasyonu tetiklendiğinde karakter "yamuluyordu" (deforme oluyordu).
+    * **Çözüm:** Sorunun, `NavMeshAgent` ile `Animator`'ün "Apply Root Motion" ayarının çakışmasından kaynaklandığı tespit edildi ve "Apply Root Motion" kapatıldı.
+* **Avatar Eksikliği:**
+    * Animasyon parametreleri değişse bile (`isMoving` true) karakter hareket etmiyordu.
+    * **Çözüm:** `Animator` bileşenindeki "Avatar" slotunun boş olduğu görüldü. Modelin "Rig" ayarı "Humanoid" olarak değiştirilerek bir Avatar oluşturuldu ve slota atandı.
+* **NavMesh Kurulumu:**
+    * Unity'nin yeni AI Navigation paketinde eski `Bake` arayüzü arandı.
+    * **Çözüm:** Sahneye bir `NavMeshSurface` bileşeni eklenerek `Bake` işlemi modern yöntemle gerçekleştirildi.
+
+### 4. Karmaşık Hasar (Hitbox) ve Nişan Alma (Raycast) Sistemi
+
+* **Karmaşık Hasar Zinciri:**
+    * Hasar sistemi "Mermi -> Hitbox -> Health" şeklinde karmaşık bir zincire sahipti.
+    * **Çözüm:** Bu zincirdeki herhangi bir halkanın kopması (örn: `Hitbox` üzerinde `Health` referansının boş olması) merminin çarpmasına rağmen hasar alınmamasına neden oluyordu. Tüm referanslar tek tek kontrol edilerek zincir tamamlandı.
+* **Ayrı Mermi (Tracer) Mantığı:**
+    * Oyuncu ve NPC'nin farklı hedeflere (`PlayerHitbox` vs `Hitbox`) hasar vermesi gerekiyordu.
+    * **Çözüm:** `AnimatedTracer.cs` (Oyuncu için) ve `NPC_AnimatedTracer.cs` (NPC için) adında iki ayrı script ve prefab oluşturuldu.
+* **Raycast Yöntem Farklılığı:**
+    * Doğru nişan alma için oyuncunun ışını **kamera merkezinden** (`mainCameraTransform.forward`), NPC'nin ise ışını **silah namlusundan** (`gunMuzzle.position`) atması gerekiyordu.
+    * **Çözüm:** Her iki yöntem de `LayerMask` kullanarak sadece istenen hedefleri vuracak şekilde ayarlandı.
 
 ## 🗺️ Literatür Özeti
 
@@ -138,7 +191,7 @@ Assets/
 
 1. `https://unity.com/download` üzerinden **Unity 6.2** sürümünü indir.
 2. `MainScene.unity` dosyasını çalıştır.  
-3. `Oyuna Başla` tuşuna basarak oyunu başlat.  0
+3. `Oyuna Başla` tuşuna basarak oyunu başlat.  
 4. Karakteri **W, A, S, D** tuşlarıyla hareket ettir,  
    **Mouse** ile nişan al, **Sol tık** ile ateş et.
 
@@ -165,7 +218,3 @@ Assets/
 
 📚 *Bilişim Sistemleri Mühendisliği — Kocaeli Üniversitesi*  
 
-## 📜 Lisans
-
-Bu proje, kişisel ve eğitim amaçlı kullanım için geliştirilmiştir.  
-Ticari kullanım öncesi geliştirici izni gerektirir.
